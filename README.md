@@ -186,3 +186,164 @@ let queue: Queue<number> = new Queue();
 ```
 
 
+
+#### Array
+
+Use JavaScript to define an array variable
+
+```javascript
+const a = [1, 2, 3];
+```
+
+TypeScript has multiple ways to define array variable.
+
+* Use TypeScript tp define an array variable, using generic, the second parameter is generic name.
+
+```typescript
+const a: Array<number> = [1, 2, 3];
+```
+
+* Use square brackets
+
+```typescript
+const a: number[] = [1, 2, 3];
+```
+
+
+
+When you define an array with certain type, you can not re-assign other type value.
+
+```typescript
+let a: number[] = [1, 2, 3];
+a = [1, 2] ;
+a = ["typescript"]; // Error
+```
+
+
+
+##### Tuple
+
+Variable must match type and count.
+
+```typescript
+let tuple: [number, number] = [1, 2];
+tuple = [3, 4];
+tuple = [5, 6, 7]; // Error: must be 2 items
+tuple = [8]; // Error: must be 2 items
+tuple = ["TypeScript", 9]; // Error: must be number
+```
+
+Type must be number, and count must be 2 items.
+
+
+
+#### Object Types and Type Aliases
+
+Add type to object's key, then you can not assign other type value to object.
+
+```typescript
+const pos: {x: number, y: number} = {
+  x: 0,
+  y: 0
+};
+```
+
+If there are multiple variables restricted by same type, we could use type alias to reuse and reduce the duplication.
+
+```typescript
+type Axis = {x: number, y: number}
+const location: Axis = {
+  x: 1,
+  y: 1
+};
+
+const pos: Axis = {
+  x: 0,
+  y: 0
+};
+```
+
+
+
+#### Declare const
+
+You can not re-assign value to a const variable. Just like JavaScript, but TypeScript has type check.
+
+```typescript
+type Axis = {x: number, y: number};
+const point: Axis = {x: 0, y: 0};
+const point2: Axis = {xx: 0, y: 0}; // Error
+point = {x: 1, y: 1}; // Error
+point.x = 1;
+point.y = 1;
+```
+
+But you can operate const object internal attributes or methods.
+
+
+
+#### Function
+
+JavaScript defines function
+
+```javascript
+function log(message) {
+  console.log(message);
+}
+```
+
+This function returns void value.
+
+TypeScript defines function
+
+```typescript
+function add(a: number, b: number): number {
+  return a + b;
+}
+```
+
+This function returns number and must return number type value. Function also add annotation to parameters(a, b).
+
+JavaScript could accept rest parameters
+
+```javascript
+function sum(...values) {
+  return values.reduce((prev, curr) => prev + curr);
+}
+```
+
+TypeScript could also add annotation to this function parameter
+
+```typescript
+function sum(...values: number[]): number {
+  return values.reduce((prev, curr) => prev + curr); 
+}
+```
+
+JavaScript supports first-class function
+
+```javascript
+let add;
+add = (a, b) => a + b
+```
+
+TypeScript supports it
+
+```typescript
+let add: (a: number, b: number) => number;
+add = function(a: number, b: number): number {
+  return a + b;
+}
+// or
+add = (a: number, b: number): number => a + b
+```
+
+We could also use type alias to reuse this function signature.
+
+```typescript
+type Add = (a: number, b: number) => number;
+let add: Add;
+add = (a: number, b: number): number => a + b
+```
+
+
