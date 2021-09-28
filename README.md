@@ -347,3 +347,396 @@ add = (a: number, b: number): number => a + b
 ```
 
 
+
+#### Structural Type
+
+TypeScript type system is structural. If the type is same, then you could assign value.
+
+```typescript
+type User = { id: number};
+type Book = { id: number};
+
+let user: User = {id: 1};
+let book: Book = {id: 2};
+
+user = book;
+```
+
+TypeScript found that their type structs are same(type compatibility), it does not care type name, they could assign value to each other.
+
+
+
+Let's look at type compatibility example (Duck Programming).
+
+```typescript
+type Point2D = {x: number, y: number};
+type Point3D = {x: number, y: number, z: number};
+
+let point2D: Point2D = {x: 0, y: 0};
+let point3D: Point3D = {x: 0, y: 0, z: 1};
+
+// additional info is OK
+point2D = point3D; // OK: point3D has x and y
+point3D = point2D; // Error: point2D does not supply z
+
+function takesPoint3D(point: Point2D) {}
+takesPoint3D(point3D); 
+```
+
+This is duck typing. If Point3D has x and y, then you could call it Point2D.
+
+
+
+#### Class
+
+JavaScript defines a class.
+
+```javascript
+class Car {
+  name;
+  
+  constructor(name) {
+    this.name = name;
+  }
+  
+  move(distance) {
+    console.log(`${this.name} moves ${distance} meters`);
+  }
+}
+
+const car = new Car("Ferrari");
+car.move(100);
+```
+
+TypeScript adds some features to JavaScript class.
+
+```typescript
+class Car {
+  protected name: string;
+  
+  constructor(name: string) {
+    this.name = name;
+  }
+  
+  public move(distance: number): void {
+    console.log(`${this.name} moves ${distance} meters`);
+  }
+}
+
+class Roadster extends Car {
+  fly(distance: number): void {
+    console.log(`I am ${this.name}, I can fly.`);
+  }
+}
+
+const car: Car = new Car("Ferrari");
+car.move(100);
+car.name = "Bugatti"； // Error: You can not assign value to private or protected attribute
+const bugatti: Roadster = new Car("Bugatti"); // sub-class could access protected attribute
+bugatti.fly();
+```
+
+
+
+#### Generics
+
+We define a class to describe the FIFO(First In First Out) structure.
+
+```js
+class Queue {
+  data = [];
+  push(item) {
+    this.data.push(item);
+  }
+
+  pop() {
+    return this.data.shift();
+  }
+}
+
+const q = new Queue();
+q.push(1);
+q.push('Hello');
+
+console.log(q.pop().toPrecision(1)); // OK
+console.log(q.pop().toPrecision(1)); // Runtime Error
+```
+
+You will find that second item can not call `toPrecision` method. We can use TypeScript to define `NumberQueue` class that just accepts number element.
+
+```typescript
+class NumberQueue extends Queue {
+  push(item: number) {
+    super.push(item);
+  }
+  
+  pop(): number {
+    return super.pop();
+  }
+}
+```
+
+But if you have string queue scenario, you have to define another class that extends `Queue`. We could use TypeScript generics to define queue class. It will only accept the specified type when you initilize the class instance.
+
+```typescript
+class Queue<T> {
+  data: Array<T> = [];
+  push(item: T) {
+    this.data.push(item);
+  }
+
+  pop(): T {
+    return this.data.shift();
+  }
+}
+
+const q = new Queue<number>();
+```
+
+
+
+#### Special Types
+
+Any and Unknown are universal super type in TypeScript. All types of variables can be assigned to any and unknown type.
+
+```typescript
+let anyVar: any;
+let unknownVar: unknown;
+
+anyVar = 1;
+anyVar = 'Hello';
+
+unknownVar = 1;
+unknownVar = 'Hello';
+```
+
+
+
+##### Any
+
+Any type just likes original javascript type, it can accpet any value, you do not need to care about type compatibility. If you do not know type and trust your code, you could use any.
+
+##### Unknown
+
+Unknown does not like any, it is safer. It can accept any type, but you can only use it in unsafe scenario.
+
+```typescript
+unknownVar = 'Hello';
+const unknownBool: boolean = unknownVar; // unknownBool is safe scenario. Compile time error
+```
+
+If you really want to use it, you have to check the type
+
+```typescript
+unknownVar = 'Hello';
+if(typeof unknownVar === 'boolean') {
+  const unknownBool: boolean = unknownVar;
+}
+```
+
+ You could think unknown is subset of any type. It can accept all type value, but only use it in unsafe scenario.
+
+
+
+#### Migrate JavaScript to TypeScript
+
+We could add any type to original JavaScript code to migrate JavaScript to TypeScript, but it still has runtime error.
+
+```typescript
+let result: any;
+result = loadString(); // if result is undefined. it will have runtime error
+console.log(result.trim());
+```
+
+We could use unknown type to annotate the type.
+
+```typescript
+let result: unknown;
+result = loadString();
+if(typeof result === 'string') {
+  console.log(result.trim());
+}
+```
+
+unknown can be used in unsafe scenario, and JavaScript is runtime language, it is unsafe. We use this method to migrate it to TypeScript, in the next, we need to change code step by step.
+
+
+
+#### Utilities
+
+We could use TypeScript to encapsulate some utility method.
+
+```typescript
+function log(value: unknown): void {
+  if(typeof value === 'number') {
+    console.log(value.toFixed(2));
+  } else {
+    console.log(value);
+  }
+}
+```
+
+Why do not use any type? because it is unsafe. We used unknown type, then we need to judge input value type. It makes scenario safe.
+
+
+
+#### Start React with TypeScript
+
+We could use [create-react-app](https://github.com/facebook/create-react-app) to generate application with TypeScript template
+
+```bash
+> npx create-react-app react-with-typescript --template typescript
+```
+
+Generated the below files
+
+* tsx files (it supports JSX syntax)
+* tsconfig.json
+
+Common commands
+
+* Start the application `npm start`
+* Build the application with `npm run build`
+* Serve the application(static files) locally with `npx serve build`
+
+### Compiler Option
+
+#### target
+
+Default target is `es5`
+
+* es5
+* es2015
+* esnext
+
+For example:
+
+```typescript
+class Car {
+  private name: string;
+  
+  constructor(name: string) {
+    this.name = name;
+  }
+  
+  public move(distance: number): void {
+    console.log(`${this.name} moves ${distance} meters`);
+  }
+}
+```
+
+This TypeScript class will be compiled to ES5
+
+```javascript
+"use strict";
+var Car = /** @class */ (function () {
+    function Car(name) {
+        this.name = name;
+    }
+    Car.prototype.move = function (distance) {
+        console.log(this.name + " moves " + distance + " meters");
+    };
+    return Car;
+}());
+```
+
+If we change target to es2015, it will be compiled to 
+
+```javascript
+"use strict";
+class Car {
+    constructor(name) {
+        this.name = name;
+    }
+    move(distance) {
+        console.log(`${this.name} moves ${distance} meters`);
+    }
+}
+```
+
+It looks same as TypeScript, es2015 has no private feature. If we change to esnext, it will be compiled to 
+
+```javascript
+"use strict";
+class Car {
+    name;
+    constructor(name) {
+        this.name = name;
+    }
+    move(distance) {
+        console.log(`${this.name} moves ${distance} meters`);
+    }
+}
+```
+
+TypeScript private attribute has another format
+
+```typescript
+class Car {
+  #name: string;
+  
+  constructor(name: string) {
+    this.#name = name;
+  }
+  
+  public move(distance: number): void {
+    console.log(`${this.#name} moves ${distance} meters`);
+  }
+}
+```
+
+esnext option could compile this format to the below result
+
+```javascript
+"use strict";
+class Car {
+    #name;
+    constructor(name) {
+        this.#name = name;
+    }
+    move(distance) {
+        console.log(`${this.#name} moves ${distance} meters`);
+    }
+}
+```
+
+es2015 option could compile this format to the below result
+
+```javascript
+"use strict";
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _Car_name;
+class Car {
+    constructor(name) {
+        _Car_name.set(this, void 0);
+        __classPrivateFieldSet(this, _Car_name, name, "f");
+    }
+    move(distance) {
+        console.log(`${__classPrivateFieldGet(this, _Car_name, "f")} moves ${distance} meters`);
+    }
+}
+_Car_name = new WeakMap();
+```
+
+But es5 can not compile this format
+
+```bash
+src/index.ts:2:3 - error TS18028: Private identifiers are only available when targeting ECMAScript 2015 and higher.
+
+2   #name: string;
+    ~~~~~
+
+[10:36:33 AM] Found 1 error. Watching for file changes.
+```
+
+
